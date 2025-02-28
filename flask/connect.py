@@ -20,9 +20,9 @@ def create_app():
 
             # 验证数据库连接
             db.session.execute(text("SELECT 1")).scalar()
-            app.logger.info("数据库连接成功")
+            print("✅ 数据库连接成功")
         except Exception as e:
-            app.logger.critical(f"数据库连接失败: {str(e)}")
+            print(f"❌ 数据库连接失败: {str(e)}")
             raise  # 直接抛出异常，防止应用以错误状态运行
 
 
