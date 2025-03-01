@@ -1,11 +1,10 @@
 <template>
     <el-container class="app-container">
-      <Home />
+      <router-view />
     </el-container>
   </template>
   
   <script setup>
-  import Home from './views/Home.vue';
   </script>
   
   <style>

@@ -1,8 +1,5 @@
-// 预加载脚本（Vue 和 Electron 通信）
-
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('electron', {
-    send: (channel, data) => ipcRenderer.send(channel, data),
-    receive: (channel, func) => ipcRenderer.on(channel, (event, ...args) => func(...args))
+contextBridge.exposeInMainWorld('electronAPI', {
+    openSettingsWindow: () => ipcRenderer.send('open-settings')
 });
