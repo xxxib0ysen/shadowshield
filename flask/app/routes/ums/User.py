@@ -10,7 +10,7 @@ user_bp = Blueprint('user', __name__, url_prefix="/user")
 def list_user():
     keyword = request.args.get('keyword', ' ')
     page = request.args.get("page", 1, type=int)
-    page_size = request.args.get('pageSize', 10, type=int)
+    page_size = request.args.get('pageSize', 6, type=int)
     return get_user_list(keyword, page, page_size)
 
 
