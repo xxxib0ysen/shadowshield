@@ -5,10 +5,9 @@ from connect import create_connection
 from app.utils.response import *
 
 
-#获取用户列表，分页
-def get_users(page, per_page, search):
-    offset, per_page = paginate_query(page, per_page)
-    search = search.strip()  #去除空格
+def get_user_list(keyword, page, page_size):
+    offset, limit = paginate_query(page, page_size)
+    keyword = keyword.strip()  #去除空格
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
@@ -18,16 +17,16 @@ def get_users(page, per_page, search):
                 where lower(username) like lower(%s) or lower(fullname) like lower(%s)
                 limit %s offset %s
             """
-            cursor.execute(sql, (f"%{search}%", f"%{search}%", per_page, offset))
+            cursor.execute(sql, (f"%{keyword}%", f"%{keyword}%", limit, offset))
             users = cursor.fetchall()
 
-            cursor.execute("select count(*) as count from ums_user where username like %s or fullname like %s",(f"%{search}%", f"%{search}%"))
+            cursor.execute("select count(*) as count from ums_user where username like %s or fullname like %s",(f"%{keyword}%", f"%{keyword}%"))
             total = cursor.fetchone()["count"]
 
             for user in users:
                 user["createdon"] = format_datetime(user["createdon"])
                 user["lastlogin"] = format_datetime(user["lastlogin"])
-        return success_response({"users": users, "total": total, "page": page, "per_page": per_page})
+        return success_response({"users": users, "total": total, "page": page, "page_size": page_size})
     except pymysql.MySQLError as e:
         return error_response(f"数据库查询失败: {str(e)}", 500)
     finally:
@@ -35,6 +34,10 @@ def get_users(page, per_page, search):
 
 # 添加用户
 def create_user(data):
+    required_fields = ["username", "fullname", "password", "status"]
+    if any(field not in data for field in required_fields):
+        return error_response("缺少必填字段", 400)
+
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
@@ -54,6 +57,26 @@ def create_user(data):
         return error_response(f"数据库操作失败: {str(e)}", 500)
     finally:
         conn.close()
+def get_user_by_id(user_id):
+    if not user_exist(user_id):
+        return error_response("用户不存在",404)
+    conn = create_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                select user_id, username, fullname, status, createdon, lastlogin
+                from ums_user where user_id=%s
+            """,(user_id,))
+            user = cursor.fetchone()
+            if user:
+                user["createdon"] = format_datetime(user["createdon"])
+                user["lastlogin"] = format_datetime(user["lastlogin"])
+            return success_response(user, "获取用户信息成功")
+    except pymysql.MySQLError as e:
+        return error_response(f"数据库操作失败: {str(e)}", 500)
+    finally:
+        conn.close()
+
 
 # 编辑用户
 def update_user(user_id, data):
@@ -121,7 +144,7 @@ def delete_user(user_id):
         conn.close()
 
 # 启用/禁用
-def toggle_user_status(user_id, status):
+def update_user_status(user_id, status):
     if not user_exist(user_id):
         return error_response("用户不存在", 404)
     conn = create_connection()
@@ -137,12 +160,12 @@ def toggle_user_status(user_id, status):
         conn.close()
 
 # 分配角色
-def assign_user_role(user_id, role_ids):
+def assign_role(user_id, role_ids):
     if not user_exist(user_id):
         return error_response("用户不存在", 404)
     for role_id in role_ids:
         if not role_exist(role_id):
-            return error_response("角色不存在", 404)
+            return error_response(f"角色{role_id}不存在", 404)
 
     conn = create_connection()
     try:
@@ -156,5 +179,26 @@ def assign_user_role(user_id, role_ids):
             return success_response(message="用户角色分配成功")
     except pymysql.MySQLError as e:
         return error_response(f"数据库操作失败: {str(e)}", 500)
+    finally:
+        conn.close()
+
+def get_user_role(user_id):
+
+    if not user_exist(user_id):
+        return error_response("用户不存在", 404)
+
+    conn = create_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                select r.role_id, r.role_name 
+                from ums_role r 
+                join ums_user_role ur on r.role_id = ur.role_id 
+                where ur.user_id = %s
+            """, (user_id,))
+            roles = cursor.fetchall()
+        return success_response(roles, "获取用户角色成功")
+    except pymysql.MySQLError as e:
+        return error_response(f"数据库查询失败: {str(e)}", 500)
     finally:
         conn.close()

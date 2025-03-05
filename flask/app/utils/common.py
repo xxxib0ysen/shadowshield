@@ -51,11 +51,11 @@ def role_exist(role_id):
 
 
 # 分页
-def paginate_query(page, per_page):
+def paginate_query(page, page_size):
     page = max(1, page)  # 确保页码至少为 1
-    per_page = min(100, max(1, per_page))  # 限制每页数量最大 100，最小 1
-    offset = (page - 1) * per_page
-    return offset, per_page
+    page_size = min(100, max(1, page_size))  # 限制每页数量最大 100，最小 1
+    offset = (page - 1) * page_size
+    return offset, page_size
 
 
 # 格式化时间
