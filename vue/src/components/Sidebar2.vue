@@ -39,6 +39,7 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
 import {
   Lock,
   User,
@@ -48,6 +49,22 @@ import {
   DataAnalysis
 } from '@element-plus/icons-vue';
 </script>
+
+const router = useRouter();
+
+const handleMenuSelect = (index) => {
+  const routeMap = {
+    "user-list": "/users",
+    "role-list": "/roles",
+    "menu-list": "/menus",
+    "resource-list": "/resources",
+    "data-list": "/data"
+  };
+  
+  if (routeMap[index]) {
+    router.push(routeMap[index]);
+  }
+};
 
 <style scoped>
 .sidebar-container {
