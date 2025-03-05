@@ -27,7 +27,7 @@ def delete_role(role_id):
 def list_role():
     keyword = request.args.get('keyword', ' ')
     page = request.args.get("page", 1, type=int)
-    page_size = request.args.get('pageSize', 10, type=int)
+    page_size = request.args.get('pageSize', 6, type=int)
     return get_role_list(keyword, page, page_size)
 
 # 启用/禁用

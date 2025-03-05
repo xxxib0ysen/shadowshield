@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const base = "http://127.0.0.1:5000/api/users"
+const base = "http://127.0.0.1:5000/users"
 
 // 获取用户列表
 export const get_user_list = (params) => {
