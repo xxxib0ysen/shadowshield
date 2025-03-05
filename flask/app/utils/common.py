@@ -50,6 +50,22 @@ def role_exist(role_id):
         conn.close()
 
 
+#     检查菜单是否存在
+def menu_exist(menu_id):
+    if menu_id is None:
+        return False
+    conn = create_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("select menu_id from ums_menu where menu_id=%s", (menu_id,))
+            return cursor.fetchone() is not None
+    finally:
+        conn.close()
+
+
+
+
+
 # 分页
 def paginate_query(page, page_size):
     page = max(1, page)  # 确保页码至少为 1
