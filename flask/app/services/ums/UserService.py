@@ -163,20 +163,41 @@ def update_user_status(user_id, status):
 def assign_role(user_id, role_ids):
     if not user_exist(user_id):
         return error_response("用户不存在", 404)
-    for role_id in role_ids:
-        if not role_exist(role_id):
-            return error_response(f"角色{role_id}不存在", 404)
+
+    if not role_ids:
+        return error_response("角色 ID 不能为空", 400)
+
+        # 校验所有角色是否存在
+    invalid_roles = [role_id for role_id in role_ids if not role_exist(role_id)]
+    if invalid_roles:
+        return error_response(f"以下角色 ID 不存在: {invalid_roles}", 404)
 
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
-            sql = "delete from ums_user_role where user_id=%s"
-            cursor.execute(sql,(user_id,))
-            sql2 = "insert into ums_user_role (user_id, role_id) values (%s, %s)"
-            cursor.executemany(sql2, [(user_id, role_id) for role_id in role_ids])
+            # 获取当前用户已有的角色
+            cursor.execute("select role_id from ums_user_role where user_id=%s", (user_id,))
+            existing_roles = {row["role_id"] for row in cursor.fetchall()}
+
+            new_roles = set(role_ids)
+
+            # 需要删除的角色
+            roles_to_remove = existing_roles - new_roles
+            # 需要新增的角色
+            roles_to_add = new_roles - existing_roles
+
+            if roles_to_remove:
+                sql = "delete from ums_user_role where user_id=%s and role_id in ({})".format(
+                    ",".join(["%s"] * len(roles_to_remove))
+                )
+                cursor.execute(sql, [user_id] + list(roles_to_remove))
+
+            if roles_to_add:
+                sql = "insert into ums_user_role (user_id, role_id) values (%s, %s)"
+                cursor.executemany(sql, [(user_id, role_id) for role_id in roles_to_add])
 
             conn.commit()
-            return success_response(message="用户角色分配成功")
+        return success_response("用户角色已更新")
     except pymysql.MySQLError as e:
         return error_response(f"数据库操作失败: {str(e)}", 500)
     finally:
