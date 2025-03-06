@@ -62,6 +62,29 @@ def menu_exist(menu_id):
     finally:
         conn.close()
 
+# 检查资源分类是否存在
+def resource_category_exist(category_id):
+    if category_id is None:
+        return False
+    conn = create_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("select category_id from ums_resource_category where category_id=%s", (category_id,))
+            return cursor.fetchone() is not None
+    finally:
+        conn.close()
+
+# 检查资源是否存在
+def resource_exist(resource_id):
+    if resource_id is None:
+        return False
+    conn = create_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("select resource_id from ums_resource where resource_id=%s", (resource_id,))
+            return cursor.fetchone() is not None
+    finally:
+        conn.close()
 
 
 
