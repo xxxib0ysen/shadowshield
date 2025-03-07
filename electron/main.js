@@ -2,11 +2,13 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 
 let mainWindow;
 let settingsWindow;
+const path = require('path')
 
 function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
+        icon: path.join(__dirname, 'assets/original.ico'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -27,6 +29,7 @@ function createSettingsWindow() {
     settingsWindow = new BrowserWindow({
         width: 900,
         height: 600,
+
         parent: mainWindow, // 让设置窗口作为主窗口的子窗口
         modal: true, // 模态窗口，用户必须关闭后才能回到主窗口
         webPreferences: {

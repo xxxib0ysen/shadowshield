@@ -3,3 +3,4 @@ electron/node_modules
 .idea
 flask/.env
 __pycache__
+electron/assets
