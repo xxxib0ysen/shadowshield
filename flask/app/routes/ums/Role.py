@@ -5,7 +5,7 @@ from app.utils.response import *
 role_bp = Blueprint('role', __name__, url_prefix='/role')
 
 # 添加
-@role_bp.route('/add', method=['POST'])
+@role_bp.route('/add', methods=['POST'])
 def add_role():
     data = request.json
     return create_role(data)
