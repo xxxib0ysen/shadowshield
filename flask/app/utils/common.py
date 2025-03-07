@@ -86,6 +86,17 @@ def resource_exist(resource_id):
     finally:
         conn.close()
 
+# 检查权限是否存在
+def permission_exist(permission_id):
+    if permission_id is None:
+        return False
+    conn = create_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("select permission_id from ums_permission where permission_id=%s", (permission_id,))
+            return cursor.fetchone() is not None
+    finally:
+        conn.close()
 
 
 

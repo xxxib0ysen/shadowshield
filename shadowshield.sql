@@ -72,24 +72,6 @@ CREATE TABLE `custom_rule`  (
 -- Records of custom_rule
 -- ----------------------------
 
--- ----------------------------
--- Table structure for data_permission
--- ----------------------------
-DROP TABLE IF EXISTS `data_permission`;
-CREATE TABLE `data_permission`  (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '权限ID',
-  `role_id` int NOT NULL COMMENT '角色ID',
-  `access_level` int NOT NULL COMMENT '访问级别',
-  `resource_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '访问的资源类型',
-  `createdon` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_role_id`(`role_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '数据访问权限表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Records of data_permission
--- ----------------------------
-INSERT INTO `data_permission` VALUES (1, 1, 3, 'user', '2025-02-28 15:37:14');
 
 -- ----------------------------
 -- Table structure for log
@@ -247,7 +229,7 @@ CREATE TABLE `ums_permission`  (
   `permission_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '权限名称',
   `permission_value` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '权限值',
   `permission_icon` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '权限图标',
-  `permission_type` int NULL DEFAULT NULL COMMENT '权限类型：0=目录；1=菜单；2=按钮',
+  `permission_type` int NULL DEFAULT NULL COMMENT '权限类型',
   `permission_uri` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '前端资源路径',
   `permission_status` int NULL DEFAULT NULL COMMENT '启用状态：0->禁用；1->启用',
   `permission_createdon` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '权限创建时间',
