@@ -88,8 +88,8 @@ def remove_role(role_id):
             # 删除该角色的资源关联
             cursor.execute("delete from ums_role_resource where role_id=%s", (role_id,))
 
-            # 删除该角色的数据关联
-            cursor.execute("delete from data_permission where role_id=%s", (role_id,))
+            # 删除该角色的权限关联
+            cursor.execute("delete from ums_role_permission where role_id=%s", (role_id,))
 
             # 删除角色本身
             cursor.execute("delete from ums_role where role_id=%s", (role_id,))

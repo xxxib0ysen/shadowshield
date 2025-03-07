@@ -76,6 +76,13 @@ def delete_resource_category(category_id):
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
+            # 检查是否有资源属于该分类
+            cursor.execute("select count(*) as count from ums_resource where category_id=%s", (category_id,))
+            resource_count = cursor.fetchone()["count"]
+
+            if resource_count > 0:
+                return error_response("该资源分类下存在资源，无法删除", 400)
+
             cursor.execute("delete from ums_resource_category where category_id=%s", (category_id,))
             conn.commit()
         return success_response("资源分类已删除")

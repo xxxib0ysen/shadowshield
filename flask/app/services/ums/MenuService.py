@@ -141,6 +141,15 @@ def remove_menu(menu_id):
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
+            # 检查是否有子菜单
+            cursor.execute("select count(*) as count from ums_menu where menu_pid=%s", (menu_id,))
+            child_count = cursor.fetchone()["count"]
+            if child_count > 0:
+                return error_response("当前菜单下存在子菜单，无法删除", 400)
+
+            # 删除 ums_role_menu 关联
+            cursor.execute("delete from ums_role_menu where menu_id=%s", (menu_id,))
+
             cursor.execute("delete from ums_menu where menu_id=%s", (menu_id,))
             conn.commit()
         return success_response("菜单删除成功")
