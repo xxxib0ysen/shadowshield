@@ -46,10 +46,16 @@ def role_menu(role_id):
 def role_resource(role_id):
     return get_role_resource(role_id)
 
-# 获取角色数据权限
-@role_bp.route('/dataPermission/<int:role_id>', methods=['GET'])
-def role_data_permission(role_id):
-    return get_role_data_permission(role_id)
+# 获取角色权限
+@role_bp.route('/listPermission/<int:role_id>', methods=['GET'])
+def role_permissions(role_id):
+    return get_role_permission(role_id)
+
+# 给角色分配权限（菜单、操作、数据权限）
+@role_bp.route('/allocPermission', methods=['POST'])
+def allocate_permissions():
+    data = request.json
+    return allocate_role_permission(data.get("role_id"), data.get("permission_ids", []))
 
 # 给角色分配菜单
 @role_bp.route('/allocMenu', methods=['POST'])
@@ -63,9 +69,5 @@ def allocate_resource():
     data = request.json
     return allocate_role_resource(data.get("role_id"), data.get("resource_ids",[]))
 
-# 给角色分配数据权限
-@role_bp.route('/allocDataPermission', methods=['POST'])
-def allocate_data_permission():
-    data = request.json
-    return allocate_role_data_permission(data.get("role_id"), data.get("permissions",[]))
+
 

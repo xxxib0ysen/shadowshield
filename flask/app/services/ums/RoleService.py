@@ -239,8 +239,9 @@ def allocate_role_resource(role_id, resource_ids):
     finally:
         conn.close()
 
-# 获取角色数据权限
-def get_role_data_permission(role_id):
+# 获取角色权限
+
+def get_role_permission(role_id):
     if not role_exist(role_id):
         return error_response("角色不存在", 404)
 
@@ -248,34 +249,33 @@ def get_role_data_permission(role_id):
     try:
         with conn.cursor() as cursor:
             sql = """
-                select id, access_level, resource_type 
-                from data_permission 
-                where role_id=%s
+                select p.permission_id, p.permission_name, p.permission_value, p.permission_type
+                from ums_permission p
+                join ums_role_permission rp on p.permission_id = rp.permission_id
+                where rp.role_id = %s
             """
             cursor.execute(sql, (role_id,))
             permissions = cursor.fetchall()
-        return success_response(permissions, "获取角色数据权限成功")
+
+        return success_response(permissions, "获取角色权限成功")
     except pymysql.MySQLError as e:
         return error_response(f"数据库查询失败: {str(e)}", 500)
     finally:
         conn.close()
 
-# 分配角色数据权限
-def allocate_role_data_permission(role_id, permissions):
+# 给角色分配权限（增量更新）
+def allocate_role_permission(role_id, permission_ids):
     if not role_exist(role_id):
         return error_response("角色不存在", 404)
-
-    if not permissions or not isinstance(permissions, list):
-        return error_response("权限数据不能为空且必须为列表", 400)
 
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
-            # 获取当前角色已有的数据权限
-            cursor.execute("select access_level, resource_type from data_permission where role_id=%s", (role_id,))
-            existing_permissions = {f"{row['access_level']}:{row['resource_type']}" for row in cursor.fetchall()}
+            # 获取当前角色已有的权限
+            cursor.execute("select permission_id from ums_role_permission where role_id=%s", (role_id,))
+            existing_permissions = {row["permission_id"] for row in cursor.fetchall()}
 
-            new_permissions = {f"{perm['access_level']}:{perm['resource_type']}" for perm in permissions}
+            new_permissions = set(permission_ids)
 
             # 需要删除的权限
             permissions_to_remove = existing_permissions - new_permissions
@@ -283,17 +283,17 @@ def allocate_role_data_permission(role_id, permissions):
             permissions_to_add = new_permissions - existing_permissions
 
             if permissions_to_remove:
-                sql = "delete from data_permission where role_id=%s and (access_level, resource_type) in ({})".format(
-                    ",".join(["(%s, %s)"] * len(permissions_to_remove))
+                sql = "delete from ums_role_permission where role_id=%s and permission_id in ({})".format(
+                    ",".join(["%s"] * len(permissions_to_remove))
                 )
-                cursor.execute(sql, [role_id] + [tuple(perm.split(":")) for perm in permissions_to_remove])
+                cursor.execute(sql, [role_id] + list(permissions_to_remove))
 
             if permissions_to_add:
-                sql = "insert into data_permission (role_id, access_level, resource_type, createdon) values (%s, %s, %s, now())"
-                cursor.executemany(sql, [(role_id, *perm.split(":")) for perm in permissions_to_add])
+                sql = "insert into ums_role_permission (role_id, permission_id) values (%s, %s)"
+                cursor.executemany(sql, [(role_id, permission_id) for permission_id in permissions_to_add])
 
             conn.commit()
-        return success_response("角色数据权限已更新")
+        return success_response("角色权限已更新")
     except pymysql.MySQLError as e:
         return error_response(f"数据库操作失败: {str(e)}", 500)
     finally:
