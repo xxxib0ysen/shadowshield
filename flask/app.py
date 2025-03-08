@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 
+from app.routes.ums.Login import login_bp
 from app.routes.ums.Menu import menu_bp
 from app.routes.ums.Permission import permission_bp
 from app.routes.ums.Resource import resource_bp
@@ -23,6 +24,7 @@ app.register_blueprint(menu_bp)
 app.register_blueprint(permission_bp)
 app.register_blueprint(resource_bp)
 app.register_blueprint(resource_category_bp)
+app.register_blueprint(login_bp)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
