@@ -1,6 +1,26 @@
 <template>
     <div class="menu-list">
-  
+        <el-card class="filter-container">
+        <div>
+            <el-icon size="small"><Operation /></el-icon>
+            <span> 筛选</span>
+            <el-button style="float:right;margin-right: 15px" size="mini" @click="resetFilters">重置</el-button>
+        </div>
+        <div style="margin-top: 15px">
+            <el-form :inline="true" :model="searchQuery"  label-width="180px">
+            <el-form-item label="菜单级数：">
+            <el-select v-model="menuLevel" placeholder="请选择" clearable @change="fetchMenus" style="width: 180px;">
+            <el-option label="一级" :value="1"></el-option>
+            <el-option label="二级" :value="2"></el-option>
+            <el-option label="三级" :value="3"></el-option>
+            </el-select>
+            </el-form-item>
+            </el-form>
+        </div>
+            
+        
+        </el-card>
+
       <el-card class="operate-container">
         <el-icon size="small"><Tickets /></el-icon>
         <span> 数据列表</span>
@@ -33,7 +53,12 @@
         <el-table-column prop="createdon" label="创建时间" width="160" align="center"/>
         <el-table-column label="操作" width="260" align="center">
           <template #default="{ row }">
-            <el-button size="mini" type="text" @click="openHierarchyDialog(row)">查看上下级</el-button>
+            <el-button 
+            size="mini" 
+            type="text" 
+            @click="openHierarchyDialog(row)"
+            :disabled="!row.menu_pid && (!row.children || row.children.length === 0)"
+            >查看上下级</el-button>
             <el-button size="mini" type="text" @click="openEditMenuDialog(row)">编辑</el-button>
             <el-button size="mini" type="text" @click="confirmDeleteMenu(row.menu_id)">删除</el-button>
           </template>
@@ -58,7 +83,7 @@
           <el-form-item label="菜单名称" prop="title">
             <el-input v-model="menuDialog.form.title" style="width: 250px"/>
           </el-form-item>
-          <el-form-item label="上级菜单">
+          <el-form-item label="上级菜单" prop="menu_pid">
             <el-cascader
               v-model="menuDialog.form.menu_pid"
               :options="menuTree"
@@ -114,6 +139,7 @@ const loading = ref(false)
 const pagination = reactive({ page: null, pageSize: null, total: 0 })
 const menuHierarchy = ref([]);  // 存放层级菜单
 const hierarchyDialog = ref(false);
+const menuLevel = ref(null);  // 菜单级数筛选
 
 const menuDialog = reactive({
 visible: false,
@@ -123,7 +149,7 @@ form: { menu_id: '', title: '', menu_pid: null, name: '', icon: '', hidden: 0 }
 
 const fetchMenus = async () => {
     loading.value = true
-    const res = await getMenuList(pagination.page, pagination.page_size)
+    const res = await getMenuList(pagination.page, pagination.page_size, menuLevel.value)
     menuList.value = res.data.menus || [];
     pagination.page = res.data.page || 1;         
     pagination.page_size = res.data.page_size || 6;
@@ -204,6 +230,11 @@ const openHierarchyDialog = async (menu) => {
   }
 };
 
+// 重置筛选
+const resetFilters = () => {
+  menuLevel.value = null;
+  fetchMenus();
+};
 
 onMounted(() => {
 fetchMenus()
@@ -212,6 +243,6 @@ fetchMenuTree()
 </script>
 
 <style scoped>
-.operate-container { margin-bottom: 15px; padding: 15px; }
+.filter-container, .operate-container { margin-bottom: 15px; padding: 15px; }
 .pagination-container { display: flex; justify-content: flex-end; padding: 10px 20px; }
 </style>
