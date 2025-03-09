@@ -1,5 +1,5 @@
 import pymysql
-from app.utils.common import paginate_query, permission_exist
+from app.utils.common import paginate_query, permission_exist, format_datetime
 from app.utils.response import success_response, error_response
 from connect import create_connection
 
@@ -127,6 +127,9 @@ def list_permissions(keyword, page, page_size):
 
             cursor.execute("select count(*) as total from ums_permission")
             total = cursor.fetchone()["total"]
+
+            for permission in permissions:
+                permission["createdon"] = format_datetime(permission["createdon"])
 
         return success_response({"permissions": permissions, "total": total, "page": page, "page_size": page_size})
     except pymysql.MySQLError as e:

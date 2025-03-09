@@ -1,5 +1,5 @@
 import pymysql
-from app.utils.common import paginate_query, resource_category_exist
+from app.utils.common import paginate_query, resource_category_exist, format_datetime
 from app.utils.response import success_response, error_response
 from connect import create_connection
 
@@ -13,6 +13,9 @@ def list_resource_category(page, page_size):
             categories = cursor.fetchall()
             cursor.execute("select count(*) as total from ums_resource_category")
             total = cursor.fetchone()["total"]
+
+            for resource_category in categories:
+                resource_category["createdon"] = format_datetime(resource_category["createdon"])
 
         return success_response({"categories": categories, "total": total, "page": page, "page_size": page_size}, "获取资源分类成功")
     except pymysql.MySQLError as e:

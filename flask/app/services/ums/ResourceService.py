@@ -1,5 +1,5 @@
 import pymysql
-from app.utils.common import paginate_query, resource_exist, resource_category_exist
+from app.utils.common import paginate_query, resource_exist, resource_category_exist, format_datetime
 from app.utils.response import success_response, error_response
 from connect import create_connection
 
@@ -40,6 +40,9 @@ def list_resource(category_id, name_keyword, uri_keyword, page, page_size):
             count_sql = f"select count(*) as total from ums_resource {where_clause}"
             cursor.execute(count_sql, tuple(values))
             total = cursor.fetchone()["total"]
+
+            for resource in resources:
+                resource["createdon"] = format_datetime(resource["createdon"])
 
         return success_response({
             "resources": resources,

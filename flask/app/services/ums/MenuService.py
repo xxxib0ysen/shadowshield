@@ -123,6 +123,8 @@ def get_all_menu(page,page_size):
             menus = cursor.fetchall()
             cursor.execute("select count(*) as total from ums_menu")
             total = cursor.fetchone()["total"]
+            for menu in menus:
+                menu["createdon"] = format_datetime(menu["createdon"])
         return success_response({
             "menus": menus,
             "total": total,
