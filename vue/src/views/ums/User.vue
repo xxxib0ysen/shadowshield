@@ -180,10 +180,10 @@ const confirmStatusChange = async (user) => {
   const oldStatus = user.status;
   const newStatus = oldStatus === 1 ? 0 : 1;
   try{
-    await ElMessageBox.confirm(`确定要${newStatus ? '启用' : '禁用'}该角色吗？`, '确认', { type: 'warning' });
+    await ElMessageBox.confirm(`确定要${newStatus ? '启用' : '禁用'}该用户吗？`, '确认', { type: 'warning' });
     await updateUserStatus(user.user_id, newStatus);
     user.status = newStatus;
-    ElMessage.success('用户状态更新成功')
+    ElMessage.success(`用户已${newStatus ? '启用' : '禁用'}`)
     fetchUsers();
   } catch {
     user.status = oldStatus;
