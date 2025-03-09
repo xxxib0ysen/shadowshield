@@ -62,6 +62,14 @@ const routes = [
         meta: { 
           title: '资源列表' 
         }
+      },
+      {
+        path: 'permission',
+        name: 'PermissionList',
+        component: () => import('@/views/ums/Permission.vue'),
+        meta: { 
+          title: '权限列表' 
+        }
       }
     ]
   },

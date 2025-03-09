@@ -24,6 +24,7 @@ def remove_permission(permission_id):
 # 分页查询
 @permission_bp.route("/list", methods=["GET"])
 def list_permission():
+    keyword = request.args.get("keyword", ' ')
     page = request.args.get("page", 1, type=int)
     page_size = request.args.get("page_size", 6, type=int)
-    return list_permissions( page, page_size)
+    return list_permissions( keyword, page, page_size)
