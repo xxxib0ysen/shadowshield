@@ -39,14 +39,14 @@ const routes = [
           keepAlive: true 
         }
       },
-      // {
-      //   path: 'role',
-      //   name: 'RoleList',
-      //   component: () => import('@/views/ums/Role.vue'),
-      //   meta: { 
-      //     title: '角色列表' 
-      //   }
-      // }
+      {
+        path: 'role',
+        name: 'RoleList',
+        component: () => import('@/views/ums/Role.vue'),
+        meta: { 
+          title: '角色列表' 
+        }
+      }
     ]
   },
   {

@@ -1,5 +1,5 @@
 import pymysql
-from app.utils.common import paginate_query, role_exist
+from app.utils.common import paginate_query, role_exist, format_datetime
 from app.utils.response import success_response, error_response
 from connect import create_connection
 
@@ -123,6 +123,8 @@ def get_role_list(keyword, page, page_size):
             cursor.execute("select count(*) as total from ums_role where role_name like %s", (f"%{keyword}%",))
             total = cursor.fetchone()["total"]
 
+            for role in roles:
+                role["createdon"] = format_datetime(role["createdon"])
         return success_response({"roles": roles, "total": total, "page": page, "page_size": page_size})
     except pymysql.MySQLError as e:
         return error_response(f"数据库查询失败: {str(e)}", 500)
