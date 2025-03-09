@@ -53,12 +53,7 @@
         <el-table-column prop="createdon" label="创建时间" width="160" align="center"/>
         <el-table-column label="操作" width="260" align="center">
           <template #default="{ row }">
-            <el-button 
-            size="mini" 
-            type="text" 
-            @click="openHierarchyDialog(row)"
-            :disabled="!row.menu_pid && (!row.children || row.children.length === 0)"
-            >查看上下级</el-button>
+            <el-button size="mini" type="text" @click="openHierarchyDialog(row)">查看上下级</el-button>
             <el-button size="mini" type="text" @click="openEditMenuDialog(row)">编辑</el-button>
             <el-button size="mini" type="text" @click="confirmDeleteMenu(row.menu_id)">删除</el-button>
           </template>
@@ -83,7 +78,7 @@
           <el-form-item label="菜单名称" prop="title">
             <el-input v-model="menuDialog.form.title" style="width: 250px"/>
           </el-form-item>
-          <el-form-item label="上级菜单" prop="menu_pid">
+          <el-form-item label="上级菜单">
             <el-cascader
               v-model="menuDialog.form.menu_pid"
               :options="menuTree"
@@ -139,12 +134,12 @@ const loading = ref(false)
 const pagination = reactive({ page: null, pageSize: null, total: 0 })
 const menuHierarchy = ref([]);  // 存放层级菜单
 const hierarchyDialog = ref(false);
-const menuLevel = ref(null);  // 菜单级数筛选
+const menuLevel = ref(null)
 
 const menuDialog = reactive({
 visible: false,
 isEdit: false,
-form: { menu_id: '', title: '', menu_pid: null, name: '', icon: '', hidden: 0 }
+form: { menu_id: '', title: '', menu_pid: 0, name: '', icon: '', hidden: 0 }
 })
 
 const fetchMenus = async () => {
@@ -160,14 +155,13 @@ const fetchMenus = async () => {
 const fetchMenuTree = async () => {
     const res = await getMenuTree();
     menuTree.value = [
-        { menu_id: null, title: "无上级菜单" }, //一级
+        { menu_id: 0, title: "无上级菜单" }, //一级
         ...res.data
   ];
 }
 
 const handleMenuSelect = (value) => {
-  // 选择 "无上级菜单" 时，将 menu_pid 设为 null
-  menuDialog.form.menu_pid = value === null ? null : value;
+  menuDialog.form.menu_pid = value === null ? 0 : value;
 };
 
 
@@ -193,7 +187,7 @@ const confirmStatusChange = async (menu) => {
 
 // 添加
 const openAddMenuDialog = () => {
-  menuDialog.form = { menu_id: '', title: '', menu_pid: null, name: '', icon: '', hidden: 0 }
+  menuDialog.form = { menu_id: '', title: '', menu_pid: 0, name: '', icon: '', hidden: 0 }
   menuDialog.isEdit = false
   menuDialog.visible = true
 }
@@ -207,6 +201,10 @@ const openEditMenuDialog = (menu) => {
 
 // 保存
 const saveMenu = async () => {
+  if (!menuDialog.form.menu_pid && menuDialog.form.menu_pid !== 0) {
+    ElMessage.error('请选择上级菜单')
+    return
+  }
   await ElMessageBox.confirm('确定要提交吗？', '确认', { type: 'warning' })
   if (menuDialog.isEdit) {
     await updateMenu(menuDialog.form.menu_id, menuDialog.form)
@@ -229,12 +227,10 @@ const openHierarchyDialog = async (menu) => {
     ElMessage.error("获取上下级菜单失败");
   }
 };
-
-// 重置筛选
 const resetFilters = () => {
-  menuLevel.value = null;
-  fetchMenus();
-};
+  menuLevel.value = null
+  fetchMenus()
+}
 
 onMounted(() => {
 fetchMenus()

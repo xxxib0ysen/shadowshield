@@ -21,7 +21,8 @@ def edit_menu(menu_id):
 def list_menu():
     page = request.args.get("page",1,type=int)
     page_size = request.args.get("page_size",5,type=int)
-    return get_all_menu(page,page_size)
+    level = request.args.get("level", type=int)
+    return get_all_menu(page,page_size,level)
 
 # 删除菜单
 @menu_bp.route("/delete/<int:menu_id>", methods=["POST"])
@@ -46,4 +47,3 @@ def menu_hierarchy(menu_id):
     page = request.args.get("page", 1, type=int)
     page_size = request.args.get("page_size", 6, type=int)
     return get_menu_hierarchy(menu_id, page, page_size)
-

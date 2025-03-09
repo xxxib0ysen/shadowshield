@@ -1,11 +1,11 @@
 import request from '@/utils/request'
 
 // 获取菜单列表
-export function getMenuList(page, page_size) {
+export function getMenuList(page, page_size, level) {
   return request({
     url: '/menu/list',
     method: 'get',
-    params: { page, page_size }
+    params: { page, page_size , level}
   })
 }
 

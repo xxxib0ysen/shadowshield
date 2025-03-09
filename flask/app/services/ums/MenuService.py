@@ -23,7 +23,7 @@ def create_menu(data):
                 return error_response("菜单名称或前端路由名称已存在",400)
 
             # 计算菜单层级
-            level = 0
+            level = 1
             if menu_pid:
                 if not menu_exist(menu_pid):
                     return error_response("父级菜单不存在", 404)
@@ -89,10 +89,10 @@ def update_menu(menu_id, data):
                         return error_response("父级菜单不存在", 404)
                     cursor.execute("select level from ums_menu where menu_id=%s", (menu_pid,))
                     parent = cursor.fetchone()
-                    level = parent["level"] + 1 if parent else 0
+                    level = parent["level"] + 1 if parent else 1
                 else:  # 无父级菜单，设为一级菜单
                     menu_pid = None
-                    level = 0
+                    level = 1
 
                 update_fields.append("menu_pid=%s")
                 update_values.append(menu_pid)
@@ -114,14 +114,25 @@ def update_menu(menu_id, data):
         conn.close()
 
 # 获取所有菜单 分页
-def get_all_menu(page,page_size):
+def get_all_menu(page,page_size,level=None):
     offset, limit = paginate_query(page, page_size)
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
-            cursor.execute("select * from ums_menu order by level asc, menu_id asc limit %s offset %s", (limit, offset))
+            if level:  # level筛选
+                cursor.execute("""
+                        select SQL_CALC_FOUND_ROWS * from ums_menu 
+                        where level=%s 
+                        order by level asc, menu_id asc limit %s offset %s
+                    """, (level, limit, offset))
+            else:
+                cursor.execute("""
+                        select SQL_CALC_FOUND_ROWS * from ums_menu 
+                        order by level asc, menu_id asc limit %s offset %s
+                    """, (limit, offset))
+
             menus = cursor.fetchall()
-            cursor.execute("select count(*) as total from ums_menu")
+            cursor.execute("select FOUND_ROWS() as total")
             total = cursor.fetchone()["total"]
             for menu in menus:
                 menu["createdon"] = format_datetime(menu["createdon"])
@@ -247,5 +258,6 @@ def get_menu_hierarchy(menu_id, page, page_size):
         return error_response(f"数据库查询失败: {str(e)}", 500)
     finally:
         conn.close()
+
 
 
