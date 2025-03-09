@@ -46,6 +46,14 @@ const routes = [
         meta: { 
           title: '角色列表' 
         }
+      },
+      {
+        path: 'menu',
+        name: 'MenuList',
+        component: () => import('@/views/ums/Menu.vue'),
+        meta: { 
+          title: '菜单列表' 
+        }
       }
     ]
   },
