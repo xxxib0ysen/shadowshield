@@ -54,6 +54,14 @@ const routes = [
         meta: { 
           title: '菜单列表' 
         }
+      },
+      {
+        path: 'resource',
+        name: 'ResourceList',
+        component: () => import('@/views/ums/Resource.vue'),
+        meta: { 
+          title: '资源列表' 
+        }
       }
     ]
   },
