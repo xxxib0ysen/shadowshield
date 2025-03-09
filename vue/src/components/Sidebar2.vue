@@ -1,6 +1,9 @@
 <template>
     <div class="sidebar-container">
-      <el-menu class="permission-menu">
+      <el-menu class="permission-menu"         
+      @select="handleMenuSelect"  
+      :default-active="activeMenu" >
+
         <!-- 权限设置主菜单 -->
         <el-sub-menu index="permission">
           <template #title>
@@ -39,7 +42,8 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
+import { computed } from 'vue';
+import { useRouter, useRoute} from 'vue-router';
 import {
   Lock,
   User,
@@ -48,23 +52,36 @@ import {
   Files,
   DataAnalysis
 } from '@element-plus/icons-vue';
-</script>
 
 const router = useRouter();
+const route = useRoute(); 
 
+const activeMenu = computed(() => {
+  const pathMap = {
+    '/ums/user': 'user-list',
+    '/ums/role': 'role-list',
+    '/ums/menu': 'menu-list',
+    '/ums/resource': 'resource-list',
+    '/ums/data': 'data-list'
+  };
+  return pathMap[route.path] || '';
+});
+
+// 菜单选择处理函数
 const handleMenuSelect = (index) => {
   const routeMap = {
-    "user-list": "/users",
-    "role-list": "/roles",
-    "menu-list": "/menus",
-    "resource-list": "/resources",
-    "data-list": "/data"
+    "user-list": "/ums/user",
+    "role-list": "/ums/role",
+    "menu-list": "/ums/menu",
+    "resource-list": "/ums/resource",
+    "data-list": "/ums/data"
   };
   
   if (routeMap[index]) {
     router.push(routeMap[index]);
   }
 };
+</script>
 
 <style scoped>
 .sidebar-container {
