@@ -25,7 +25,7 @@ def get_user_list(keyword, page, page_size):
 
             for user in users:
                 user["createdon"] = format_datetime(user["createdon"])
-                user["lastlogin"] = format_datetime(user["lastlogin"])
+                user["lastlogin"] = format_datetime(user["lastlogin"]) if user["lastlogin"] else "N/A"
         return success_response({"users": users, "total": total, "page": page, "page_size": page_size})
     except pymysql.MySQLError as e:
         return error_response(f"数据库查询失败: {str(e)}", 500)

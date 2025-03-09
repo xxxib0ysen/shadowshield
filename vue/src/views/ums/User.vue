@@ -29,7 +29,7 @@
       <el-table-column prop="lastlogin" label="最后登录" width="160" align="center"/>
       <el-table-column label="是否启用" width="140" align="center">
         <template #default="{ row }">
-          <el-switch v-model="row.status" :active-value="1" :inactive-value="0" @change="confirmStatusChange(row)"/>
+          <el-switch :model-value="row.status" :active-value="1" :inactive-value="0" @change="confirmStatusChange(row)"/>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="180" align="center">
@@ -86,7 +86,7 @@
 import {
   Search, Tickets
 } from '@element-plus/icons-vue';
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserList, addUser, updateUser, deleteUser, updateUserStatus } from '@/api/ums/user'
 
@@ -116,7 +116,10 @@ const fetchUsers = async () => {
 
     console.log("后端返回的数据:", res.data); 
 
-    userList.value = res.data.users || []; 
+    userList.value = res.data.users.map(user => ({
+      ...user,
+      lastlogin: user.lastlogin || "N/A"
+    }));
 
     pagination.page = res.data.page || 1;         
     pagination.pageSize = res.data.pageSize || 6;
@@ -174,13 +177,24 @@ const confirmDeleteUser = async (user_id) => {
 
 // 确认修改状态
 const confirmStatusChange = async (user) => {
-  await ElMessageBox.confirm('确定修改用户状态吗？', '确认', { type: 'warning' })
-  await updateUserStatus(user.user_id, user.status)
-  ElMessage.success('用户状态更新成功')
+  const oldStatus = user.status;
+  try{
+    await ElMessageBox.confirm('确定修改用户状态吗？', '确认', { type: 'warning' })
+    await updateUserStatus(user.user_id, user.status)
+    ElMessage.success('用户状态更新成功')
+  } catch {
+    user.status = oldStatus;
+  }
+
 }
 
 const resetUserDialog = () => {
   userDialog.form = { user_id: '', username: '', fullname: '', password: '', status: 1 }
+  nextTick(() => {
+    if(userFormRef.value) {
+      userFormRef.value.resetFields()
+    }
+  })
 }
 
 onMounted(fetchUsers)

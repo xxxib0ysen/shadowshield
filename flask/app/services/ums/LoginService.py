@@ -36,6 +36,9 @@ def login_user(username, password):
                 return error_response("用户名或密码错误", 401)
 
             token = generate_token(user["user_id"], user["username"])
+            # lastlogin
+            cursor.execute("update ums_user set lastlogin=now() where user_id=%s", (user["user_id"],))
+            conn.commit()
             return success_response({"token": token}, "登录成功")
     finally:
         conn.close()
