@@ -2,7 +2,7 @@
     <div class="menu-list">
         <el-card class="filter-container">
         <div>
-            <el-icon size="small"><Operation /></el-icon>
+            <el-icon size="small"><Filter /></el-icon>
             <span> 筛选</span>
             <el-button style="float:right;margin-right: 15px" size="mini" @click="resetFilters">重置</el-button>
         </div>

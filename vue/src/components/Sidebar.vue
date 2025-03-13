@@ -45,7 +45,7 @@
 
 <!-- 窗口 A 显示设置按钮，窗口 B 不显示 -->
     <div v-if="window_key === 'A'" class="setting-button">
-      <el-icon class="icon-button"  @click="openSetting"><Tools /></el-icon>
+      <el-icon class="icon-button"  @click="openSetting"><Setting /></el-icon>
     </div>
   </el-aside>
 </template>
@@ -120,7 +120,7 @@ onMounted(() => {
 }
 
 .icon-button {
-  font-size: 40px; 
+  font-size: 30px; 
   cursor: pointer; 
   color: #6b6666; 
   transition: color 0.3s, transform 0.1s ease-in-out; 
