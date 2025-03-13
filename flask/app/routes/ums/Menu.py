@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from app.services.ums.MenuService import *
 from app.utils.response import success_response, error_response
 
-menu_bp = Blueprint("menu", __name__, url_prefix="/menu")
+menu_bp = Blueprint('menu', __name__, url_prefix='/menu')
 
 # 添加菜单
 @menu_bp.route("/add", methods=["POST"])
@@ -20,9 +20,10 @@ def edit_menu(menu_id):
 @menu_bp.route("/list", methods=["GET"])
 def list_menu():
     page = request.args.get("page",1,type=int)
-    page_size = request.args.get("page_size",5,type=int)
+    page_size = request.args.get("page_size",6,type=int)
     level = request.args.get("level", type=int)
-    return get_all_menu(page,page_size,level)
+    window_key = request.args.get("window_key", type=str)
+    return get_all_menu(page,page_size,level,window_key)
 
 # 删除菜单
 @menu_bp.route("/delete/<int:menu_id>", methods=["POST"])
@@ -38,12 +39,7 @@ def change_menu_status(menu_id):
 # 以树形结构返回所有菜单
 @menu_bp.route("/treeList", methods=["GET"])
 def tree_list():
-    return get_menu_tree()
+    window_key = request.args.get("window_key", type=str)
+    return get_menu_tree(window_key)
 
 
-# 获取指定菜单的上下级菜单
-@menu_bp.route("/hierarchy/<int:menu_id>", methods=["GET"])
-def menu_hierarchy(menu_id):
-    page = request.args.get("page", 1, type=int)
-    page_size = request.args.get("page_size", 6, type=int)
-    return get_menu_hierarchy(menu_id, page, page_size)

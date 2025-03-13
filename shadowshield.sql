@@ -11,7 +11,7 @@
  Target Server Version : 80033 (8.0.33)
  File Encoding         : 65001
 
- Date: 01/03/2025 13:16:45
+ Date: 10/03/2025 23:35:15
 */
 
 SET NAMES utf8mb4;
@@ -71,7 +71,6 @@ CREATE TABLE `custom_rule`  (
 -- ----------------------------
 -- Records of custom_rule
 -- ----------------------------
-
 
 -- ----------------------------
 -- Table structure for log
@@ -212,12 +211,26 @@ CREATE TABLE `ums_menu`  (
   `icon` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '菜单图标',
   `hidden` int NOT NULL DEFAULT 0 COMMENT '是否隐藏菜单（0=显示，1=隐藏）',
   `createdon` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `window_key` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '窗口标识',
   PRIMARY KEY (`menu_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '菜单表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '菜单表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_menu
 -- ----------------------------
+INSERT INTO `ums_menu` VALUES (4, 0, '后台管理', 1, 'ums', 'Management', 0, '2025-03-09 23:15:49', 'B');
+INSERT INTO `ums_menu` VALUES (5, 4, '用户列表', 2, 'user', 'UserFilled', 0, '2025-03-09 23:19:07', 'B');
+INSERT INTO `ums_menu` VALUES (6, 4, '角色列表', 2, 'role', 'Avatar', 0, '2025-03-09 23:22:35', 'B');
+INSERT INTO `ums_menu` VALUES (7, 4, '菜单列表', 2, 'menu', 'Menu', 0, '2025-03-09 23:23:38', 'B');
+INSERT INTO `ums_menu` VALUES (8, 4, '资源列表', 2, 'resource', 'Grid', 0, '2025-03-10 00:14:28', 'B');
+INSERT INTO `ums_menu` VALUES (9, 4, '权限列表', 2, 'permission', 'Opportunity', 0, '2025-03-10 00:15:11', 'B');
+INSERT INTO `ums_menu` VALUES (10, 0, '首页', 1, 'home', 'HomeFilled', 0, '2025-03-10 00:19:19', 'A');
+INSERT INTO `ums_menu` VALUES (11, 0, '浏览保护', 1, 'BrowsingProtection', 'HelpFilled', 0, '2025-03-10 00:22:00', 'A');
+INSERT INTO `ums_menu` VALUES (12, 0, '广告拦截', 1, 'AdBlock', 'RemoveFilled', 0, '2025-03-10 00:24:21', 'A');
+INSERT INTO `ums_menu` VALUES (13, 0, '监控防护', 1, 'monitor', 'InfoFilled', 0, '2025-03-10 00:25:30', 'A');
+INSERT INTO `ums_menu` VALUES (14, 0, '日志分析', 1, 'log', 'List', 0, '2025-03-10 00:26:09', 'A');
+INSERT INTO `ums_menu` VALUES (15, 0, '上网管理', 1, 'network', 'Platform', 0, '2025-03-10 00:28:49', 'A');
+INSERT INTO `ums_menu` VALUES (16, 0, '系统设置', 1, 'setting', 'Tools', 0, '2025-03-10 00:30:58', 'A');
 
 -- ----------------------------
 -- Table structure for ums_permission
@@ -229,7 +242,7 @@ CREATE TABLE `ums_permission`  (
   `permission_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '权限名称',
   `permission_value` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '权限值',
   `permission_icon` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '权限图标',
-  `permission_type` int NULL DEFAULT NULL COMMENT '权限类型',
+  `permission_type` int NULL DEFAULT NULL COMMENT '权限类型：1=页面权限, 2=操作权限, 3=数据权限',
   `permission_uri` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '前端资源路径',
   `permission_status` int NULL DEFAULT NULL COMMENT '启用状态：0->禁用；1->启用',
   `permission_createdon` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '权限创建时间',
@@ -268,7 +281,7 @@ CREATE TABLE `ums_resource_category`  (
   `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '分类描述',
   `createdon` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`category_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源分类表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源分类表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_resource_category
@@ -287,12 +300,13 @@ CREATE TABLE `ums_role`  (
   `count` int NULL DEFAULT 0 COMMENT '该角色下的用户数量',
   PRIMARY KEY (`role_id`) USING BTREE,
   UNIQUE INDEX `role_name`(`role_name` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_role
 -- ----------------------------
 INSERT INTO `ums_role` VALUES (1, '超级管理员', '系统最高权限', '2025-02-28 15:37:14', 1, 0);
+INSERT INTO `ums_role` VALUES (2, '测试角色', '测试测试测试111111237657547436646665343456634666356354', '2025-03-09 15:51:41', 1, 0);
 
 -- ----------------------------
 -- Table structure for ums_role_menu
@@ -362,12 +376,13 @@ CREATE TABLE `ums_user`  (
   `status` int NOT NULL DEFAULT 1 COMMENT '账号启用状态：0->禁用；1->启用',
   PRIMARY KEY (`user_id`) USING BTREE,
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ums_user
 -- ----------------------------
-INSERT INTO `ums_user` VALUES (1, 'root', '超级管理员', 'root', '2025-02-28 15:37:14', NULL, 1);
+INSERT INTO `ums_user` VALUES (1, 'root', '超级管理员', '4813494d137e1631bba301d5acab6e7bb7aa74ce1185d456565ef51d737677b2', '2025-02-28 15:37:14', '2025-03-10 23:32:46', 1);
+INSERT INTO `ums_user` VALUES (2, 'hr1', '测试', 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', '2025-03-08 21:16:39', NULL, 0);
 
 -- ----------------------------
 -- Table structure for ums_user_role

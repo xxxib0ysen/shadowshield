@@ -8,17 +8,20 @@
         </div>
         <div style="margin-top: 15px">
             <el-form :inline="true" :model="searchQuery"  label-width="180px">
-            <el-form-item label="菜单级数：">
-            <el-select v-model="menuLevel" placeholder="请选择" clearable @change="fetchMenus" style="width: 180px;">
-            <el-option label="一级" :value="1"></el-option>
-            <el-option label="二级" :value="2"></el-option>
-            <el-option label="三级" :value="3"></el-option>
-            </el-select>
-            </el-form-item>
+              <el-form-item label="菜单级数：">
+                <el-select v-model="menuLevel" placeholder="请选择" clearable @change="fetchMenus" style="width: 180px;">
+                  <el-option label="一级" :value="1"></el-option>
+                  <el-option label="二级" :value="2"></el-option>
+                  <el-option label="三级" :value="3"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="窗口标识：">
+               <el-select v-model="windowKey" placeholder="请选择窗口" clearable @change="fetchMenus" style="width: 180px;">
+                 <el-option v-for="key in windowKeys" :key="key" :label="key" :value="key"></el-option>
+                </el-select>
+              </el-form-item>
             </el-form>
         </div>
-            
-        
         </el-card>
 
       <el-card class="operate-container">
@@ -37,6 +40,7 @@
             <span v-else-if="row.level === 3">三级</span>
           </template>
         </el-table-column>
+        <el-table-column prop="window_key" label="窗口标识" width="160" align="center"/>
         <el-table-column prop="name" label="前端名称" width="160" align="center"/>
         <el-table-column prop="icon" label="前端图标" width="160" align="center">
             <template #default="{ row }">
@@ -86,13 +90,17 @@
                 value: 'menu_id', 
                 label: 'title' ,
                 children: 'children',
-                expandTrigger: 'hover' 
+                checkStrictly: true,
+                expandTrigger: 'click' 
                 }"
               style="width: 250px"
               clearable
               @change="handleMenuSelect"
             />
           </el-form-item>
+          <el-form-item label="窗口标识">
+            <el-input v-model="menuDialog.form.window_key" placeholder="请输入窗口标识" style="width: 250px"/>
+          </el-form-item> 
           <el-form-item label="前端名称" prop="name">
             <el-input v-model="menuDialog.form.name" style="width: 250px"/>
           </el-form-item>
@@ -132,19 +140,19 @@ const menuList = ref([])
 const menuTree = ref([])
 const loading = ref(false)
 const pagination = reactive({ page: null, pageSize: null, total: 0 })
-const menuHierarchy = ref([]);  // 存放层级菜单
-const hierarchyDialog = ref(false);
 const menuLevel = ref(null)
+const windowKeys = ref(["A","B"])
+const windowKey = ref("")
 
 const menuDialog = reactive({
 visible: false,
 isEdit: false,
-form: { menu_id: '', title: '', menu_pid: 0, name: '', icon: '', hidden: 0 }
+form: { menu_id: '', title: '', menu_pid: 0, name: '', icon: '', hidden: 0,window_key: '' }
 })
 
 const fetchMenus = async () => {
     loading.value = true
-    const res = await getMenuList(pagination.page, pagination.page_size, menuLevel.value)
+    const res = await getMenuList(pagination.page, pagination.page_size, menuLevel.value,windowKey.value)
     menuList.value = res.data.menus || [];
     pagination.page = res.data.page || 1;         
     pagination.page_size = res.data.page_size || 6;
@@ -153,7 +161,7 @@ const fetchMenus = async () => {
 }
 
 const fetchMenuTree = async () => {
-    const res = await getMenuTree();
+    const res = await getMenuTree(windowKey.value);
     menuTree.value = [
         { menu_id: 0, title: "无上级菜单" }, //一级
         ...res.data
@@ -187,7 +195,7 @@ const confirmStatusChange = async (menu) => {
 
 // 添加
 const openAddMenuDialog = () => {
-  menuDialog.form = { menu_id: '', title: '', menu_pid: 0, name: '', icon: '', hidden: 0 }
+  menuDialog.form = { menu_id: '', title: '', menu_pid: 0, name: '', icon: '', hidden: 0,window_key: ''  }
   menuDialog.isEdit = false
   menuDialog.visible = true
 }
@@ -217,16 +225,7 @@ const saveMenu = async () => {
   fetchMenus()
 }
 
-// 查看上下级
-const openHierarchyDialog = async (menu) => {
-  try {
-    const res = await getMenuHierarchy(menu.menu_id);
-    menuHierarchy.value = res.data;
-    hierarchyDialog.value = true;  
-  } catch (error) {
-    ElMessage.error("获取上下级菜单失败");
-  }
-};
+
 const resetFilters = () => {
   menuLevel.value = null
   fetchMenus()

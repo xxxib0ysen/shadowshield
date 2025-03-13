@@ -1,8 +1,6 @@
 <template>
     <el-container class="home-container">
-      <el-aside width="200px" class="sidebar">
-        <Sidebar1 />
-      </el-aside>
+      <Layout />
       <el-main class="main-content">
         <h2>已保护 {{ daysProtected }} 天</h2>
         <p>火绒正在保护您的电脑</p>
@@ -28,29 +26,25 @@
     </el-container>
   </template>
   
-  <script setup>
-  import { ref } from 'vue';
-  import Sidebar1 from '../components/Sidebar1.vue';
-  import { HomeFilled, HelpFilled,RemoveFilled, Platform, Management, Tools, Download, Check, Delete } from '@element-plus/icons-vue';
+<script setup>
+import { ref } from 'vue';
+import {  Download, Check, Delete } from '@element-plus/icons-vue';
+import Layout from '@/layout/Layout.vue';
 
-  const daysProtected = ref(46);
-  </script>
-  
-  <style scoped>
-  .home-container {
-    height: 100vh;
-    display: flex;
-  }
-  .sidebar {
-    background: #f8f9fa;
-    height: 100vh;
-  }
-  .main-content {
-    text-align: center;
-    padding: 20px;
-  }
-  .action-buttons {
-    margin-top: 20px;
-  }
-  </style>
-  
+const daysProtected = ref(46);
+</script>
+
+<style scoped>
+.home-container {
+  height: 100vh;
+  display: flex;
+}
+
+.main-content {
+  text-align: center;
+  padding: 20px;
+}
+.action-buttons {
+  margin-top: 20px;
+}
+</style>

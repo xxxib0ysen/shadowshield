@@ -1,19 +1,20 @@
 import request from '@/utils/request'
 
 // 获取菜单列表
-export function getMenuList(page, page_size, level) {
+export function getMenuList(page, page_size, level,window_key) {
   return request({
     url: '/menu/list',
     method: 'get',
-    params: { page, page_size , level}
+    params: { page, page_size , level,window_key}
   })
 }
 
 // 获取所有菜单（树形结构）
-export function getMenuTree() {
+export function getMenuTree(window_key) {
   return request({
     url: '/menu/treeList',
-    method: 'get'
+    method: 'get',
+    params: {window_key}
   })
 }
 
@@ -49,14 +50,5 @@ export function updateMenuStatus(menu_id, hidden) {
     url: `/menu/updateHidden/${menu_id}`,
     method: 'post',
     data: { hidden }
-  })
-}
-
-// 获取菜单的层级关系
-export function getMenuHierarchy(menu_id, page, page_size) {
-  return request({
-    url: `/menu/hierarchy/${menu_id}`,
-    method: 'get',
-    params: { page, page_size }
   })
 }

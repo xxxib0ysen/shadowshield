@@ -1,5 +1,6 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron')
 
-contextBridge.exposeInMainWorld('electronAPI', {
-    openSettingsWindow: () => ipcRenderer.send('open-settings')
-});
+contextBridge.exposeInMainWorld('electron', {
+    getWindowType: () => ipcRenderer.invoke('get-window-type'),
+    openSetting: () => ipcRenderer.send('open-setting')
+})

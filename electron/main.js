@@ -1,8 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 
 let mainWindow;
-let settingsWindow;
-const path = require('path')
+let settingWindow;
+
+const path = require('path');
 
 function createMainWindow() {
     mainWindow = new BrowserWindow({
@@ -12,21 +13,22 @@ function createMainWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
-            preload: __dirname + '/preload.js' // 预加载
+            preload: path.join(__dirname ,'/preload.js') // 预加载
         }
     });
 
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
+
 }
 
-function createSettingsWindow() {
-    if (settingsWindow) {
-        settingsWindow.focus();
+function createSettingWindow() {
+    if (settingWindow) {
+        settingWindow.focus();
         return;
     }
 
-    settingsWindow = new BrowserWindow({
+    settingWindow = new BrowserWindow({
         width: 900,
         height: 600,
 
@@ -34,21 +36,28 @@ function createSettingsWindow() {
         modal: true, // 模态窗口，用户必须关闭后才能回到主窗口
         webPreferences: {
             nodeIntegration: false,
-            contextIsolation: true
+            contextIsolation: true,
+            preload: path.join(__dirname ,'/preload.js')
         }
     });
-
-    settingsWindow.loadURL('http://localhost:5173/#/settings');
-
-    settingsWindow.on('closed', () => {
-        settingsWindow = null; // 关闭窗口时释放资源
+    settingWindow.loadURL('http://localhost:5173/#/setting');
+    settingWindow.webContents.openDevTools();
+    settingWindow.on('closed',()=> {
+        settingWindow = null;
     });
 }
 
 app.whenReady().then(() => {
     createMainWindow();
 
-    ipcMain.on('open-settings', createSettingsWindow);
+        
+    // 监听窗口标识
+    ipcMain.handle('get-window-type', (event) => {
+        return BrowserWindow.getFocusedWindow() === settingWindow ? 'B' : 'A';
+    });
+
+    // 监听打开 B 窗口请求
+    ipcMain.on('open-setting', createSettingWindow);
 });
 
 app.on('window-all-closed', () => {

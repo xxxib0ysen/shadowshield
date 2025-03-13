@@ -8,8 +8,9 @@ def create_menu(data):
     title = data.get("title")
     name = data.get("name")
     icon = data.get("icon")
-    menu_pid = data.get("menu_pid",None)
+    menu_pid = data.get("menu_pid",0)
     hidden = data.get("hidden",0)
+    window_key = data.get("window_key","")
 
     if not title or not name:
         return error_response("菜单名称和前端路由名称不能为空",400)
@@ -24,7 +25,7 @@ def create_menu(data):
 
             # 计算菜单层级
             level = 1
-            if menu_pid:
+            if menu_pid and menu_pid != 0:
                 if not menu_exist(menu_pid):
                     return error_response("父级菜单不存在", 404)
 
@@ -34,10 +35,10 @@ def create_menu(data):
                     level = parent["level"] + 1
 
             sql = """
-                    insert into ums_menu (menu_pid, title, name, icon, hidden, level, createdon)
-                    values (%s, %s, %s, %s, %s, %s, now())
+                    insert into ums_menu (menu_pid, title, name, icon, hidden, level, window_key, createdon)
+                    values (%s, %s, %s, %s, %s, %s, %s, now())
                 """
-            cursor.execute(sql, (menu_pid, title, name, icon, hidden, level))
+            cursor.execute(sql, (menu_pid, title, name, icon, hidden, level,window_key))
             conn.commit()
 
         return success_response("菜单创建成功")
@@ -81,17 +82,21 @@ def update_menu(menu_id, data):
                 update_fields.append("hidden=%s")
                 update_values.append(data["hidden"])
 
+            if "window_key" in data:
+                update_fields.append("window_key=%s")
+                update_values.append(data["window_key"])
+
             # menu_pid 更新，并自动更新 level
             if "menu_pid" in data:
                 menu_pid = data["menu_pid"]
-                if menu_pid:  # 有父级菜单
+                if menu_pid and menu_pid !=0:  # 有父级菜单
                     if not menu_exist(menu_pid):
                         return error_response("父级菜单不存在", 404)
                     cursor.execute("select level from ums_menu where menu_id=%s", (menu_pid,))
                     parent = cursor.fetchone()
                     level = parent["level"] + 1 if parent else 1
                 else:  # 无父级菜单，设为一级菜单
-                    menu_pid = None
+                    menu_pid = 0
                     level = 1
 
                 update_fields.append("menu_pid=%s")
@@ -114,22 +119,24 @@ def update_menu(menu_id, data):
         conn.close()
 
 # 获取所有菜单 分页
-def get_all_menu(page,page_size,level=None):
+def get_all_menu(page,page_size,level=None, window_key=None):
     offset, limit = paginate_query(page, page_size)
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
-            if level:  # level筛选
-                cursor.execute("""
-                        select SQL_CALC_FOUND_ROWS * from ums_menu 
-                        where level=%s 
-                        order by level asc, menu_id asc limit %s offset %s
-                    """, (level, limit, offset))
-            else:
-                cursor.execute("""
-                        select SQL_CALC_FOUND_ROWS * from ums_menu 
-                        order by level asc, menu_id asc limit %s offset %s
-                    """, (limit, offset))
+            sql = "select SQL_CALC_FOUND_ROWS * from ums_menu where 1=1"
+            params = []
+            if level is not None:
+                sql += " and level=%s"
+                params.append(level)
+
+            if window_key:
+                sql += " and window_key=%s"
+                params.append(window_key)
+
+            sql += " order by level asc, menu_id asc limit %s offset %s"
+            params.extend([limit,offset])
+            cursor.execute(sql, tuple(params))
 
             menus = cursor.fetchall()
             cursor.execute("select FOUND_ROWS() as total")
@@ -188,13 +195,19 @@ def update_menu_status(menu_id, hidden):
         conn.close()
 
 #  获取所有菜单，以树形结构返回
-def get_menu_tree():
+def get_menu_tree(window_key=None):
 
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
-            # 获取所有菜单
-            cursor.execute("select * from ums_menu order by level asc, menu_id asc")
+            sql = "select * from ums_menu where 1=1"
+            params = []
+            if window_key:
+                sql += " and window_key=%s"
+                params.append(window_key)
+
+            sql += " order by level asc, menu_id asc"
+            cursor.execute(sql, tuple(params))
             menus = cursor.fetchall()
 
         # 构建树形结构
@@ -203,7 +216,7 @@ def get_menu_tree():
 
         for menu in menus:
             menu["children"] = []
-            if menu["menu_pid"]:
+            if menu["menu_pid"] and menu["menu_pid"] != 0:
                 parent = menu_dict.get(menu["menu_pid"])
                 if parent:
                     parent["children"].append(menu)
@@ -216,48 +229,5 @@ def get_menu_tree():
         return error_response(f"数据库查询失败: {str(e)}", 500)
     finally:
         conn.close()
-
-
-# 获取指定菜单的上下级菜单
-def get_menu_hierarchy(menu_id, page, page_size):
-    if not menu_exist(menu_id):
-        return error_response("菜单不存在", 404)
-    offset, limit = paginate_query(page, page_size)
-    conn = create_connection()
-    try:
-        with conn.cursor() as cursor:
-            # 当前菜单
-            cursor.execute("select * from ums_menu where menu_id=%s", (menu_id,))
-            menu = cursor.fetchone()
-
-            if not menu:
-                return error_response("菜单不存在", 404)
-
-            # 上级菜单
-            parent_menu = None
-            if menu["menu_pid"]:
-                cursor.execute("select * from ums_menu where menu_id=%s", (menu["menu_pid"],))
-                parent_menu = cursor.fetchone()
-
-            # 下级菜单
-            cursor.execute("select * from ums_menu where menu_pid=%s limit %s offset %s", (menu_id,limit,offset))
-            child_menus = cursor.fetchall()
-            cursor.execute("select count(*) as total from ums_menu where menu_pid=%s", (menu_id,))
-            total_child_menus = cursor.fetchone()["total"]
-
-        return success_response({
-            "current_menu": menu,
-            "parent_menu": parent_menu,
-            "child_menus": child_menus,
-            "child_total": total_child_menus,
-            "page": page,
-            "page_size": page_size
-        }, "获取菜单层级成功")
-
-    except pymysql.MySQLError as e:
-        return error_response(f"数据库查询失败: {str(e)}", 500)
-    finally:
-        conn.close()
-
 
 
