@@ -2,7 +2,7 @@ from flask import Blueprint, request
 from app.services.rule.SourceService import SourceService
 from app.utils.response import success_response, error_response
 
-adblock_bp = Blueprint('adblock', __name__, url_prefix='/rule/adblock')
+adblock_bp = Blueprint('adblock', __name__, url_prefix='/adblock')
 
 
 #  批量导入

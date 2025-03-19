@@ -1,5 +1,7 @@
 import hashlib
 import re
+from email.utils import parsedate_to_datetime
+
 import pymysql
 import requests
 
@@ -50,8 +52,8 @@ class SourceService:
             conn = create_connection()
             with conn.cursor() as cursor:
                 sql = """
-                insert into adblock_source (source_name, source_url, createdon)
-                values (%s, %s, now())
+                insert into adblock_source (source_name, source_url, createdon, status)
+                values (%s, %s, now(), 1)
                 """
 
                 for source_name, source_url in sources:
@@ -82,7 +84,7 @@ class SourceService:
                 offset, page_size = paginate_query(page, page_size)
 
                 sql = """
-                        select * from adblock_source 
+                        select source_id, source_name, source_url ,createdon, last_modified, status from adblock_source 
                         order by last_modified desc
                         limit %s offset %s
                         """
@@ -166,6 +168,14 @@ class SourceService:
                         etag_web = response.headers.get('ETag')
                         last_modified_web = response.headers.get('Last-Modified')
 
+                        # 解析 Last-Modified
+                        if last_modified_web:
+                            try:
+                                last_modified_dt = parsedate_to_datetime(last_modified_web)
+                                last_modified_web = last_modified_dt.strftime('%Y-%m-%d %H:%M:%S')
+                            except Exception:
+                                last_modified_web = None  # 解析失败时，置为空
+
                         # ETag 校验
                         if etag_db and etag_web and etag_db == etag_web:
                             skipped_count += 1
@@ -184,14 +194,12 @@ class SourceService:
 
                         rule_content = response.text
                         new_checksum = SourceService.calculate_checksum(rule_content)
+                        fetch_adblock_rules(source_url)
 
                         # Checksum 校验
                         if checksum_db and new_checksum == checksum_db:
                             skipped_count += 1
                             continue
-
-                        # 格式化 last_modified_web
-                        last_modified_web = format_datetime(last_modified_web) if last_modified_web else None
 
                         # 更新数据库
                         sql_update = """
