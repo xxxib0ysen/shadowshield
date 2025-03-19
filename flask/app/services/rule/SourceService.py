@@ -3,8 +3,8 @@ import re
 import pymysql
 import requests
 
-# from app.utils.adblock_parser import get_rules_from_redis, fetch_adblock_rules
-from app.utils.common import paginate_query
+from app.utils.adblock_parser import get_rules_from_redis, fetch_adblock_rules
+from app.utils.common import paginate_query, format_datetime
 from connect import create_connection
 from app.utils.response import *
 from datetime import datetime
@@ -88,6 +88,13 @@ class SourceService:
                         """
                 cursor.execute(sql, (page_size, offset))
                 sources = cursor.fetchall()
+
+                # **格式化时间字段**
+                for source in sources:
+                    source["last_modified"] = format_datetime(source["last_modified"])
+                    source["createdon"] = format_datetime(source["createdon"])
+                    # **从 Redis 获取解析后的规则**
+                    source["parsed_rules"] = get_rules_from_redis(source["source_url"])
 
                 # **从 Redis 获取解析后的规则**
                 for source in sources:
@@ -182,6 +189,9 @@ class SourceService:
                         if checksum_db and new_checksum == checksum_db:
                             skipped_count += 1
                             continue
+
+                        # 格式化 last_modified_web
+                        last_modified_web = format_datetime(last_modified_web) if last_modified_web else None
 
                         # 更新数据库
                         sql_update = """
