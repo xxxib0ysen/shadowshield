@@ -53,7 +53,19 @@ const routes = [
           }
       
         ]
-      }     
+      } ,
+      {
+        path: 'rule',
+        name: 'rule',
+        redirect: '/setting/rule/adblock',
+        children: [
+          {
+            path: 'adblock',
+            name: 'adblock',
+            component: () => import('@/views/rule/AdblockSource.vue')
+          }
+        ]
+      }    
     ]
 },
   { 

@@ -65,7 +65,8 @@ const loadMenu = async () => {
   try {
     window_key.value = await window.electron.getWindowType(); // 获取当前窗口标识
     const response = await getMenuTree(window_key.value); // 获取树形结构菜单
-
+    console.log("菜单数据：", response.data); 
+    
     menuList.value = Array.isArray(response.data) ? response.data : [];
 
     // 默认选中第一个菜单
@@ -86,7 +87,14 @@ const filteredMenuList = computed(() => {
 // 路由跳转
 const navigateTo = (routeName) => {
   if (window_key.value === "B") {
-    router.push({ path: `/setting/ums/${routeName}` });
+    let basePath = "/setting";
+    const parentMenu = menuList.value.find(menu =>
+      menu.children?.some(child => child.name === routeName)
+    );
+    if (parentMenu) {
+      basePath += `/${parentMenu.name}`;
+    }
+    router.push({path: `${basePath}/${routeName}`});
   } else {
     router.push({ name: routeName });
   }
