@@ -1,9 +1,12 @@
 from apscheduler.schedulers.background import BackgroundScheduler
+from flask import current_app
+
 from app.services.rule.SourceService import SourceService
 
 #  自动同步广告规则源
 def update_adblock_sources_task():
-    SourceService.update_sources()
+    with current_app.app_context():
+        SourceService.update_sources()
 
     # 启动定时任务
 def start_scheduler():
@@ -11,4 +14,5 @@ def start_scheduler():
     scheduler.add_job(update_adblock_sources_task, 'interval', hours=12)
     scheduler.start()
 
-    update_adblock_sources_task()
+    with current_app.app_context():
+        update_adblock_sources_task()

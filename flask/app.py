@@ -29,7 +29,8 @@ app.register_blueprint(resource_category_bp)
 app.register_blueprint(login_bp)
 
 app.register_blueprint(adblock_bp)
-start_scheduler()
+with app.app_context():
+    start_scheduler()
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
