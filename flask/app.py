@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 
+from app.routes.rule.adblock_source import adblock_bp
 from app.routes.ums.Login import login_bp
 from app.routes.ums.Menu import menu_bp
 from app.routes.ums.Permission import permission_bp
@@ -10,6 +11,7 @@ from app.routes.ums.Role import role_bp
 from connect import create_app  # 导入封装的 create_app()
 from config import Config
 from app.routes.ums.User import user_bp
+from app.utils.task_scheduler import start_scheduler
 
 app = create_app()
 if not app:
@@ -25,6 +27,9 @@ app.register_blueprint(permission_bp)
 app.register_blueprint(resource_bp)
 app.register_blueprint(resource_category_bp)
 app.register_blueprint(login_bp)
+
+app.register_blueprint(adblock_bp)
+start_scheduler()
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
