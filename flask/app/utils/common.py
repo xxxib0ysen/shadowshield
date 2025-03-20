@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 import hashlib
 
@@ -7,21 +8,15 @@ from flask import request
 from app.utils.response import error_response
 from connect import create_connection
 
-
+# 获取请求中的 JSON 数据
 def get_json():
-    # 获取请求中的 JSON 数据
     try:
         return request.get_json()
     except Exception:
         return None
 
+# 验证请求参数是否完整
 def validate_params(required_params, data):
-    """
-    验证请求参数是否完整
-    :param required_params: 必填参数列表
-    :param data: 请求数据
-    :return: 缺失参数列表
-    """
     missing_params = [param for param in required_params if param not in data]
     return missing_params
 
@@ -29,7 +24,7 @@ def validate_params(required_params, data):
 def hash_pwd(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
-#检查用户是否存在
+# 检查用户是否存在
 def user_exist(user_id):
     conn = create_connection()
     try:
@@ -39,7 +34,7 @@ def user_exist(user_id):
     finally:
         conn.close()
 
-#检查角色是否存在
+# 检查角色是否存在
 def role_exist(role_id):
     conn = create_connection()
     try:
@@ -49,8 +44,7 @@ def role_exist(role_id):
     finally:
         conn.close()
 
-
-#     检查菜单是否存在
+#   检查菜单是否存在
 def menu_exist(menu_id):
     if menu_id is None:
         return False
@@ -98,15 +92,12 @@ def permission_exist(permission_id):
     finally:
         conn.close()
 
-
-
 # 分页
 def paginate_query(page, page_size):
     page = max(1, page)  # 确保页码至少为 1
     page_size = min(100, max(1, page_size))  # 限制每页数量最大 100，最小 1
     offset = (page - 1) * page_size
     return offset, page_size
-
 
 # 格式化时间
 def format_datetime(dt):
@@ -119,3 +110,9 @@ def format_datetime(dt):
             return dt
     return None
 
+# 验证 URL 是否符合格式，支持通配符 '*' 和 '>'
+def validate_url(url):
+    pattern = re.compile(
+        r'^(https?:\/\/)?([a-zA-Z0-9*>\-._~:/?#@!$&\'()*+,;=%]+)$'
+    )
+    return bool(pattern.match(url))

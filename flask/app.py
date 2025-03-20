@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 from app.routes.rule.adblock_source import adblock_bp
+from app.routes.rule.website_control import website_bp
 from app.routes.ums.Login import login_bp
 from app.routes.ums.Menu import menu_bp
 from app.routes.ums.Permission import permission_bp
@@ -31,6 +32,6 @@ app.register_blueprint(login_bp)
 app.register_blueprint(adblock_bp)
 with app.app_context():
     start_scheduler()
-
+app.register_blueprint(website_bp)
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
