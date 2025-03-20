@@ -19,7 +19,7 @@ class SourceService:
     def calculate_checksum(content):
         return hashlib.sha256(content.encode('utf-8')).hexdigest()
 
-    # 解析输入的规则源（格式：规则名称 | 规则URL，支持换行符、*、>）
+    # 解析输入的规则源（格式：规则名称 | 规则URL，支持换行符）
     @staticmethod
     def parse_source(input_text):
         input_text = input_text.replace("\r\n", "\n").replace("\r", "\n")
@@ -30,9 +30,6 @@ class SourceService:
                 continue  # 必须包含 "规则名称|规则URL"
 
             source_name, source_url = map(str.strip, clean_line.split("|", 1))
-
-            # 处理通配符 * 和 >
-            source_url = source_url.replace("*", "").replace(">", "")
 
             # 仅存储有效的 http(s) URL
             if source_name and re.match(r'^https?://', source_url):

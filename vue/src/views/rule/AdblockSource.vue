@@ -3,19 +3,19 @@
     <el-main>
 
       <el-card shadow="never" class="card-spacing">
-        <el-tabs v-model="activeTab">
+        <el-tabs v-model="activeTab" @tab-click="handleTabClick">
           <el-tab-pane label="广告拦截规则源" name="adblock"></el-tab-pane>
           <el-tab-pane label="网站控制规则" name="website"></el-tab-pane>
         </el-tabs>
       </el-card>
 
-      <el-card class="operate-container">
+      <el-card shadow="never" class="operate-container">
         <el-icon size="small"><Tickets /></el-icon>
           <span> 数据列表</span>
-        <el-button size="small" circle @click="fetchRules" style="float:right">
+        <el-button size="mini" circle @click="fetchRules" style="float:right">
           <el-icon><RefreshRight /></el-icon>
         </el-button>
-        <el-button type="primary" size="small"  @click="openImportDialog" style="float:right;margin-right: 15px">导入</el-button>
+        <el-button  size="mini"  @click="openImportDialog" style="float:right;margin-right: 15px">导入</el-button>
 
     </el-card>
 
@@ -42,7 +42,7 @@
 
         <el-table-column label="操作" >
           <template #default="{ row }">
-            <el-button type="text" size="small"  @click="deleteSource(row.source_id)">删除</el-button>
+            <el-button type="text" size="mini"  @click="deleteSource(row.source_id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -84,7 +84,7 @@
             type="textarea" 
             v-model="importRules" 
             :rows="5" 
-            placeholder="多个规则源以换行符进行区分，支持通配符“*”“>”(必填)"
+            placeholder="多个规则源以换行符进行区分(必填)"
           />
         </el-form-item>
       </el-form>
@@ -99,11 +99,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount , watch} from "vue";
 import { getAdblockList, addAdblockSource, deleteAdblockSource, updateAdblockStatus } from "@/api/rule/adblocksource";
 import { ElMessage, ElMessageBox } from "element-plus";
+import {useRoute, useRouter} from "vue-router";
 
-// 数据管理
+
 const activeTab = ref("adblock");
 const ruleList = ref([]);
 const loading = ref(false);
@@ -111,6 +112,16 @@ const importDialogVisible = ref(false);
 const importRules = ref("");
 const alertVisible = ref(true);
 const errorMessage = ref(""); // 存储后端返回的错误信息
+const route = useRoute();
+const router = useRouter();
+
+// 点击选项卡
+watch(() => route.path, (newPath) => {
+  activeTab.value = newPath.includes("website") ? "website" : "adblock";
+});
+const handleTabClick = (tab) => {
+  router.push(tab.paneName === "website" ? "/setting/rule/website_control" : "/setting/rule/adblock");
+};
 
 // 分页
 const pagination = reactive({

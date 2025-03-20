@@ -102,10 +102,10 @@ def add_website_rule(data):
     try:
         with conn.cursor() as cursor:
             # 处理换行符，拆分多个网站，并去除前后空格
-            urls = [url.strip() for url in website_url.split("\n") if url.strip()]
+            urls = [url.strip() for url in website_url.splitlines() if url.strip()]
 
             for url in urls:
-                if not validate_url(url):
+                if not validate_url(url) and "*" not in url and ">" not in url:
                     return error_response(f"无效的网址格式: {url}",400)
 
             sql = "insert into website_content_control (website_url, type_id, status) values (%s, %s, %s)"
@@ -161,6 +161,10 @@ def get_website_rule():
                 order by  wc.createdon desc
             """)
             rules = cursor.fetchall()
+
+            for rule in rules:
+                rule["website_url"] = rule["website_url"].replace("\r\n", "\n").replace("\r", "\n")
+
         return success_response(rules,"获取规则成功",200)
     except pymysql.MySQLError as e:
         return error_response(f"数据库查询失败: {str(e)}",500)
