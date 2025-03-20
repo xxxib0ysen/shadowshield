@@ -63,6 +63,11 @@ const routes = [
             path: 'adblock',
             name: 'adblock',
             component: () => import('@/views/rule/AdblockSource.vue')
+          },
+          {
+            path: 'website_control',
+            name: 'website_control',
+            component: () => import('@/views/rule/WebsiteControl.vue')
           }
         ]
       }    
