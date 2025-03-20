@@ -113,6 +113,6 @@ def format_datetime(dt):
 # 验证 URL 是否符合格式，支持通配符 '*' 和 '>'
 def validate_url(url):
     pattern = re.compile(
-        r'^(https?:\/\/)?([a-zA-Z0-9*>\-._~:/?#@!$&\'()*+,;=%]+)$'
+        r'^(https?:\/\/)?([a-zA-Z0-9\-._~:/?#@!$&\'()*+,;=%*<>]+)$'
     )
     return bool(pattern.match(url))
