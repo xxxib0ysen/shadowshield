@@ -1,6 +1,6 @@
 import pymysql
 from connect import create_connection
-from app.utils.common import validate_url
+from app.utils.common import validate_url, format_datetime
 from app.utils.response import *
 
 # 获取所有网站类型
@@ -10,6 +10,8 @@ def get_website_type():
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute("select * from website_type order by createdon desc ")
             types = cursor.fetchall()
+            for t in types:
+                t["last_modified"] = format_datetime(t["last_modified"])
         return success_response(types)
     except pymysql.MySQLError as e:
         return error_response(f"数据库查询失败: {str(e)}", 500)
