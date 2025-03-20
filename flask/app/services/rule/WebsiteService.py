@@ -8,11 +8,14 @@ def get_website_type():
     conn = create_connection()
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute("select * from website_type order by createdon desc ")
+            cursor.execute("""select wt.*,coalesce(wtu.last_modified, wt.createdon) as last_modified
+                                    from website_type wt
+                                    left join website_type_update wtu on wt.type_id = wtu.type_id
+                                    order by wt.createdon desc """)
             types = cursor.fetchall()
             for t in types:
-                t["last_modified"] = format_datetime(t["last_modified"])
-        return success_response(types)
+                t["last_modified"] = format_datetime(t["last_modified"]) if t["last_modified"] else None
+        return success_response(types, "获取网站类型成功",200)
     except pymysql.MySQLError as e:
         return error_response(f"数据库查询失败: {str(e)}", 500)
     finally:
@@ -21,16 +24,16 @@ def get_website_type():
 # 添加网站类型
 def add_type(type_name):
     if not type_name:
-        return error_response("网站类型不能为空")
+        return error_response("网站类型不能为空",400)
 
     conn = create_connection()
     try:
         with conn.cursor() as cursor:
             cursor.execute("insert into website_type (type_name) values (%s)",(type_name,))
             conn.commit()
-        return success_response("网站类型添加成功")
+        return success_response("网站类型添加成功",200)
     except pymysql.IntegrityError:
-        return error_response("该网站类型已存在")
+        return error_response("该网站类型已存在",400)
     except pymysql.MySQLError as e:
         return error_response(f"数据库查询失败: {str(e)}", 500)
     finally:
@@ -39,7 +42,7 @@ def add_type(type_name):
 # 删除网站类型
 def delete_website_type(type_id):
     if not is_valid_type(type_id):
-        return error_response("网站类型不存在")
+        return error_response("网站类型不存在",404)
 
     conn = create_connection()
     try:
@@ -51,9 +54,9 @@ def delete_website_type(type_id):
             # 删除类型
             cursor.execute("delete from website_type where type_id = %s", (type_id,))
             conn.commit()
-        return success_response("网站类型及其关联网站已删除")
+        return success_response("网站类型及其关联网站已删除",200)
     except pymysql.MySQLError as e:
-        return error_response(f"数据库操作失败: {str(e)}")
+        return error_response(f"数据库操作失败: {str(e)}",500)
     finally:
         conn.close()
 
@@ -61,9 +64,9 @@ def delete_website_type(type_id):
 def is_valid_type(type_id):
     conn = create_connection()
     try:
-        with conn.cursor() as cursor:
-            cursor.execute("select count(*) from website_type where type_id = %s", (type_id,))
-            exist = cursor.fetchone()[0] > 0
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute("select count(*) as count from website_type where type_id = %s", (type_id,))
+            exist = cursor.fetchone()["count"] > 0
         return exist
     finally:
         conn.close()
@@ -90,10 +93,10 @@ def add_website_rule(data):
     status = data.get("status", 1)
 
     if not website_url or not type_id:
-        return error_response("网址和网站类型不能为空")
+        return error_response("网址和网站类型不能为空",400)
 
     if not is_valid_type(type_id):
-        return error_response(f"无效的网站类型 id: {type_id}")
+        return error_response(f"无效的网站类型 id: {type_id}",400)
 
     conn = create_connection()
     try:
@@ -103,7 +106,7 @@ def add_website_rule(data):
 
             for url in urls:
                 if not validate_url(url):
-                    return error_response(f"无效的网址格式: {url}")
+                    return error_response(f"无效的网址格式: {url}",400)
 
             sql = "insert into website_content_control (website_url, type_id, status) values (%s, %s, %s)"
             values = [(url, type_id, status) for url in urls]
@@ -113,9 +116,9 @@ def add_website_rule(data):
         # 更新网站类型最后修改时间
         update_type_last_modified(type_id)
 
-        return success_response("规则添加成功")
+        return success_response("规则添加成功",200)
     except pymysql.MySQLError as e:
-        return error_response(f"数据库查询失败: {str(e)}")
+        return error_response(f"数据库查询失败: {str(e)}",500)
     finally:
         conn.close()
 
@@ -126,7 +129,7 @@ def delete_website_rule(website_id):
         with conn.cursor() as cursor:
             cursor.execute("delete from  website_content_control where website_id = %s", (website_id,))
             conn.commit()
-        return success_response("规则已删除")
+        return success_response("规则已删除",200)
     except pymysql.MySQLError as e:
         return error_response(f"数据库操作失败: {str(e)}", 500)
     finally:
@@ -140,9 +143,9 @@ def update_website_status(website_id, status):
             sql = "update website_content_control set status = %s where website_id = %s"
             cursor.execute(sql, (status, website_id))
             conn.commit()
-        return success_response("规则状态已更新")
+        return success_response("规则状态已更新",200)
     except pymysql.MySQLError as e:
-        return error_response(f"数据库操作失败: {str(e)}")
+        return error_response(f"数据库操作失败: {str(e)}",500)
     finally:
         conn.close()
 
@@ -158,8 +161,8 @@ def get_website_rule():
                 order by  wc.createdon desc
             """)
             rules = cursor.fetchall()
-        return success_response(rules)
+        return success_response(rules,"获取规则成功",200)
     except pymysql.MySQLError as e:
-        return error_response(f"数据库查询失败: {str(e)}")
+        return error_response(f"数据库查询失败: {str(e)}",500)
     finally:
         conn.close()
