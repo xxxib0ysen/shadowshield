@@ -60,6 +60,25 @@ def delete_website_type(type_id):
     finally:
         conn.close()
 
+# 修改网站类型状态
+def update_type_status(type_id, status):
+    if status not in [0, 1]:
+        return error_response("无效的状态值，应为 0 或 1", 400)
+
+    if not is_valid_type(type_id):
+        return error_response("网站类型不存在", 404)
+
+    conn = create_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("update website_type set status = %s where type_id = %s", (status, type_id))
+            conn.commit()
+        return success_response("网站类型状态更新成功", 200)
+    except pymysql.MySQLError as e:
+        return error_response(f"数据库操作失败: {str(e)}", 500)
+    finally:
+        conn.close()
+
 # 检查 type_id 是否存在
 def is_valid_type(type_id):
     conn = create_connection()

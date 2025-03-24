@@ -2,7 +2,7 @@ import pymysql
 from flask import Blueprint, request
 from app.services.rule.WebsiteService import (
     get_website_type, add_type, delete_website_type,
-    add_website_rule, delete_website_rule, update_website_status, get_website_rule
+    add_website_rule, delete_website_rule, update_website_status, get_website_rule, update_type_status
 )
 from app.utils.response import success_response, error_response
 
@@ -28,6 +28,18 @@ def delete_type():
     if not type_id:
         return error_response("type_id不能为空")
     return delete_website_type(type_id)
+
+# 修改网站类型状态
+@website_bp.route("/type/updateStatus", methods=["POST"])
+def update_type_status_route():
+    data = request.get_json()
+    type_id = data.get("type_id")
+    status = data.get("status")
+
+    if type_id is None or status not in [0, 1]:
+        return error_response("参数错误，type_id 必须存在，状态值必须为 0 或 1", 400)
+
+    return update_type_status(type_id, status)
 
 # 添加网站访问规则（支持单个/多个网址）
 @website_bp.route("/add", methods=["POST"])
