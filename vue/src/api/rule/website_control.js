@@ -15,6 +15,11 @@ export function deleteWebsiteType(type_id) {
     return axios.post("/website_control/type/delete", { type_id });
 }
 
+// 修改类型启用状态
+export const updateWebsiteTypeStatus = (type_id, status) => {
+    return request.post('/website_control/type/updateStatus', { type_id, status })
+}
+
 // 获取网站规则
 export function getWebsiteRule() {
     return axios.get("/website_control/list");

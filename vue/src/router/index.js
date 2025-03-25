@@ -3,17 +3,37 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 const routes = [
   { 
     path: '/', 
-    redirect: '/login' 
+    redirect: '/login' ,
+    component: () => import('@/layout/Layout.vue'),
+    children: [
+      { 
+        path: '/home', 
+        name: 'home', 
+        component: () => import('@/views/Home.vue') 
+      },
+    ]
   },
   { 
     path: '/login', 
     name: 'Login', 
     component: () => import('@/views/ums/Login.vue') 
   },
-  { 
-    path: '/home', 
-    name: 'home', 
-    component: () => import('@/views/Home.vue') 
+
+  {
+    path: '/control',
+    component: () => import('@/layout/Layout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'control',
+        component: () => import('@/views/control/Control.vue')
+      },
+      {
+        path: 'custom_rule',
+        name: 'custom_rule',
+        component: () => import('@/views/control/Website.vue')
+      }
+    ]
   },
 
   { 

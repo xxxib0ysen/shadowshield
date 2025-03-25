@@ -189,3 +189,31 @@ def get_website_rule():
         return error_response(f"数据库查询失败: {str(e)}",500)
     finally:
         conn.close()
+
+# 获取所有启用的 type_id（类型状态=1）
+def get_enabled_type_ids():
+    conn = create_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("select type_id from website_type where status = 1")
+            return [r[0] for r in cursor.fetchall()]
+    finally:
+        conn.close()
+
+# 获取启用状态的网址规则，按类型分组返回
+def get_enabled_type_url_map():
+    conn = create_connection()
+    try:
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute("""
+                select type_id, website_url 
+                from website_content_control 
+                where status = 1
+            """)
+            mapping = {}
+            for row in cursor.fetchall():
+                tid = row["type_id"]
+                mapping.setdefault(tid, []).append(row["website_url"])
+            return mapping
+    finally:
+        conn.close()
