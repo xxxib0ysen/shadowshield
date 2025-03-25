@@ -1,5 +1,5 @@
 <template>
-  <el-aside class="sidebar" width="150px">
+  <el-aside class="sidebar" style="width:auto">
     <el-menu
       :default-active="activeMenu"
       background-color="#f4f4f4"
@@ -51,13 +51,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted,watch } from "vue";
 import { getMenuTree } from "@/api/ums/menu";
-import { useRouter } from "vue-router";
+import { useRouter,useRoute } from "vue-router";
 
 const menuList = ref([]);
 const activeMenu = ref("");
 const router = useRouter();
+const route = useRoute();
 const window_key = ref("A");
 
 // 加载菜单
@@ -69,15 +70,17 @@ const loadMenu = async () => {
     
     menuList.value = Array.isArray(response.data) ? response.data : [];
 
-    // 默认选中第一个菜单
-    if (menuList.value.length > 0) {
-      activeMenu.value = menuList.value[0].name;
-    }
+    activeMenu.value = route.name || menuList.value[0]?.name; //初始高亮
   } catch (error) {
     console.error("菜单加载失败:", error);
     menuList.value = [];
   }
 };
+
+// 根据当前路由高亮菜单
+watch(() => route.name, (newVal) => {
+  activeMenu.value = newVal;
+});
 
 // 过滤启用的菜单
 const filteredMenuList = computed(() => {
@@ -86,6 +89,7 @@ const filteredMenuList = computed(() => {
 
 // 路由跳转
 const navigateTo = (routeName) => {
+  activeMenu.value = routeName;
   if (window_key.value === "B") {
     let basePath = "/setting";
     const parentMenu = menuList.value.find(menu =>
@@ -100,6 +104,7 @@ const navigateTo = (routeName) => {
   }
 };
 
+
 // 打开设置窗口
 const openSetting = () => {
   window.electron.openSetting();
@@ -108,6 +113,7 @@ const openSetting = () => {
 onMounted(() => {
   loadMenu();
 });
+
 </script>
 
 <style scoped>

@@ -4,3 +4,4 @@ electron/node_modules
 flask/.env
 __pycache__
 electron/assets
+vue/src/components/icons
